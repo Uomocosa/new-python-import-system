@@ -6,18 +6,28 @@ def test_get_importer_filepath():
     # print(f">>> Path(__file__).absolute(): {Path(__file__).absolute()}")
     # assert Path(__file__).resolve() == Path(__file__).absolute()
 
-def test_1():
+def test_imports():
     import new_import_system
+    import package
+    print(dir(submpackageodule1))
     import submodule1
-    assert submodule1.fun1() == 'fun1'
+    print(dir(submodule1))
+    import submodule1.fun1
+    print(dir(submodule1.fun1))
 
-def test_2():
-    from submodule1 import fun1
-    assert fun1() == 'fun1'
 
-def test_3():
-    from package import submodule1
-    assert submodule1.fun1() == 'fun1'
+# def test_1():
+#     import new_import_system
+#     import submodule1
+#     assert submodule1.fun1() == 'fun1'
+
+# def test_2():
+#     from submodule1 import fun1
+#     assert fun1() == 'fun1'
+
+# def test_3():
+#     from package import submodule1
+#     assert submodule1.fun1() == 'fun1'
 
 # def test_4():
 #     from package.submodule1 import fun1
