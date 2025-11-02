@@ -15,3 +15,6 @@ dependencies = []
 
 [tool.setuptools]
 packages = ["new_import_system"]
+
+[tool.pytest.ini_options]
+testpaths = ["../new_import_system_tests"]
