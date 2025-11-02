@@ -1,9 +1,9 @@
 import inspect
-from importlib import Path
+from pathlib import Path
 
 def P(path) -> Path: return Path(path).absolute()
 
-INIT_FILE_PATH = P(__file__).parent / "__init__".py
+INIT_FILE_PATH = P(__file__).parent / "__init__.py"
 
 # Works fine, but is a little hacky
 def get_importer_filepath(DEBUG=False, VERBOSE=False) -> Path:
@@ -17,3 +17,7 @@ def get_importer_filepath(DEBUG=False, VERBOSE=False) -> Path:
     if DEBUG and VERBOSE: [print(frame.filename) for frame in import_frames]
     if not import_frames: return None
     return P(import_frames[0].filename)
+
+def test_():
+    # get_importer_filepath() == __file__
+    pass
