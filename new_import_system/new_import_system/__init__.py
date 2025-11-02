@@ -16,32 +16,72 @@ VERBOSE = False
 THIS_FILE_PATH = P(__file__)
 if DEBUG: print(f">>> THIS_FILE_PATH: {THIS_FILE_PATH}")
 
-# top_level_package = Path('.').absolute()
-# print(f">>> top_level_package: {top_level_package}")
+
 
 class _CallableModuleProxy(ModuleType):
     """
     A proxy object that acts like a module but is also callable.
+    It delegates all attribute access to the original module.
     """
     def __init__(self, module):
-        # We can't just subclass ModuleType and __init__ it.
-        # Instead, we copy the module's state into ourself.
+        # Initialize as a module type
         super().__init__(module.__name__, module.__doc__)
-        self.__dict__.update(module.__dict__)
         
-        # Store the original module and the function to call
-        self._module = module
+        # Use object.__setattr__ to set our internal attributes
+        # to avoid triggering our own __setattr__ override.
+        object.__setattr__(self, "_module", module)
+        
         name = module.__name__.split('.')[-1]
-        if DEBUG: print(f"module: {module}")
-        if DEBUG: print(f"dir(module): {dir(module)}")
-        self._function_to_call = getattr(module, name)
+        func = getattr(module, name, None)
+        object.__setattr__(self, "_function_to_call", func)
+        
+        # Manually copy over special attributes that __getattr__
+        # might not handle correctly for the import system.
+        self.__file__ = getattr(module, '__file__', None)
+        self.__loader__ = getattr(module, '__loader__', None)
+        self.__package__ = getattr(module, '__package__', None)
+        self.__spec__ = getattr(module, '__spec__', None)
+        self.__path__ = getattr(module, '__path__', None)
 
     def __call__(self, *args, **kwargs):
         """When the 'module' is called, call the function."""
+        if not callable(self._function_to_call):
+             raise TypeError(f"Module {self.__name__} is not callable (function '{self._function_to_call}' not found or not callable)")
         return self._function_to_call(*args, **kwargs)
 
     def __repr__(self):
-        return f"<CallableModuleProxy for {self._module.__name__}>"
+        return f"<CallableModuleProxy for {self._module.__name__} (callable: {callable(self._function_to_call)})>"
+
+    def __getattr__(self, name):
+        """Delegate attribute access to the original module."""
+        try:
+            return getattr(self._module, name)
+        except AttributeError:
+            # Raise a standard AttributeError
+            raise AttributeError(f"module '{self.__name__}' has no attribute '{name}'")
+
+    def __setattr__(self, name, value):
+        """Delegate attribute setting to the original module."""
+        # Set our internal attributes directly
+        if name in ("_module", "_function_to_call"):
+            object.__setattr__(self, name, value)
+        # Set all other attributes on the wrapped module
+        else:
+            setattr(self._module, name, value)
+    
+    def __delattr__(self, name):
+        """Delegate attribute deletion to the original module."""
+        delattr(self._module, name)
+
+    def __dir__(self):
+        """Delegate dir() to the original module."""
+        return dir(self._module)
+        
+    @property
+    def __dict__(self):
+        """Delegate __dict__ access to the original module."""
+        return self._module.__dict__
+
 
 class CallableLoader(importlib.abc.Loader):
     """
@@ -50,6 +90,8 @@ class CallableLoader(importlib.abc.Loader):
     """
     def __init__(self, original_loader):
         if DEBUG: print(f">F> CallableLoader's __init__")
+        if DEBUG: print(f">>> self: {self}")
+        if DEBUG: print(f">>> original_loader: {original_loader}")
         self.original_loader = original_loader
 
     def create_module(self, spec):
@@ -64,82 +106,45 @@ class CallableLoader(importlib.abc.Loader):
         name = module.__name__.split('.')[-1]
         func = getattr(module, name, None)
 
-        # Start by assuming the module we attach to is the original
-        module_to_attach_to = module 
-
-        if callable(func):
-            if DEBUG: print(f">>> Found callable {name} in {module.__name__}. Creating proxy.")
-            # It has the function! Create our proxy.
+        # Check if the module has a function with the same name and it's callable
+        if func and callable(func):
+            if DEBUG: print(f">>> Found callable '{name}' in module '{module.__name__}'. Creating proxy.")
+            
+            # Create the proxy
             proxy = _CallableModuleProxy(module)
-            # Replace the module in sys.modules with our proxy
+            
+            # CRITICAL Step 1: Replace the module in sys.modules with the proxy.
+            # This handles 'import submodule1'
             sys.modules[module.__name__] = proxy
-            # Any new attributes must be attached to the proxy, not the old module
-            module_to_attach_to = proxy
+            
+            # CRITICAL Step 2: Attach the proxy to the parent module.
+            # This handles 'from package import submodule1'
+            parts = module.__name__.split('.')
+            if len(parts) > 1:
+                parent_name = ".".join(parts[:-1])
+                child_name = parts[-1]
+                if parent_name in sys.modules:
+                    parent_module = sys.modules[parent_name]
+                    if DEBUG: print(f">>> Attaching proxy '{module.__name__}' to parent '{parent_name}' as '{child_name}'")
+                    # Set the attribute on the parent module to be our *new proxy*
+                    setattr(parent_module, child_name, proxy)
         
-        # --- Part 2: Auto-load .py files from package dir ---
-        pkg_path = getattr(module, '__path__', None)
-        if pkg_path:
-            try:
-                for base in pkg_path: # e.g., '.../submodule1'
-                    if not os.path.isdir(base):
-                        continue
-
-                    # Find all .py files except __init__.py
-                    py_files = [f for f in os.listdir(base) if f.endswith('.py') and not f == '__init__.py']
-                    if DEBUG: print(f">>> Found .py files in {base}: {py_files}")
-                    
-                    for py_file in py_files:
-                        sub_module_name = py_file[:-3] # e.g., 'fun1'
-                        target_file = os.path.join(base, py_file)
-
-                        # e.g., 'submodule1.fun1'
-                        spec_name = f"{module.__name__}.{sub_module_name}"
-                        
-                        # Avoid re-importing if it's already there
-                        if spec_name in sys.modules:
-                            continue
-
-                        spec = importlib.util.spec_from_file_location(spec_name, target_file)
-                        
-                        if spec and spec.loader:
-                            submod = importlib.util.module_from_spec(spec)
-                            
-                            # IMPORTANT: Use the *original* loader (spec.loader)
-                            # not a new CallableLoader, or you'll get recursion.
-                            spec.loader.exec_module(submod)
-                            
-                            # Register the new submodule
-                            sys.modules[spec_name] = submod
-                            if DEBUG: print(f">>> Loaded submodule {spec_name}")
-
-                            # Attach its public callables to the parent package
-                            for attr_name in dir(submod):
-                                if not attr_name.startswith('_'):
-                                    val = getattr(submod, attr_name)
-                                    if callable(val):
-                                        if DEBUG: print(f">>> Attaching {spec_name}.{attr_name} to {module_to_attach_to.__name__} as {attr_name}")
-                                        # Attach to the proxy or the original module
-                                        setattr(module_to_attach_to, attr_name, val)
-                                        
-            except Exception as e:
-                if DEBUG: print(f"Error during package auto-load: {e}")
-                pass # best-effort
+        # If no callable func is found, we do nothing.
+        # The original module just stays in sys.modules as-is.
 
 
 
 class CallableFinder(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
-        if DEBUG: print(f">F> CallableFinder's find_spec")
-        if DEBUG: print(f">>> self: {self}")
-        if DEBUG: print(f">>> fullname: {fullname}")
-        if DEBUG: print(f">>> path: {path}")
-        if DEBUG: print(f">>> target: {target}")
-        if DEBUG: print(f">>> get_importer_filepath(): {get_importer_filepath()}")
+        # if DEBUG: print(f">F> CallableFinder's find_spec")
+        # if DEBUG: print(f">>> self: {self}")
+        # if DEBUG: print(f">>> fullname: {fullname}")
+        # if DEBUG: print(f">>> path: {path}")
+        # if DEBUG: print(f">>> target: {target}")
+        # if DEBUG: print(f">>> get_importer_filepath(): {get_importer_filepath()}")
         importer_file = get_importer_filepath()
         if path is None: # Top-level import (~ex.: 'import module1')
-            if not importer_file: 
-                if DEBUG: print(">>> No importer file, returning None")
-                return None
+            if not importer_file: return None
             search_dirs = [importer_file.parent]
             module_name_to_find = fullname # e.g., 'submodule1'
         else: # Submodule import (~ex.: 'from module1 import submodule1')
@@ -154,36 +159,25 @@ class CallableFinder(importlib.abc.MetaPathFinder):
         assert len(packages_to_import) <= 1, "How are there more than 1 PACKAGE with the same name in this folder???"
         if files_to_import and packages_to_import:
             warnings.warn(f"Found both a file and a python package named {fullname}, I will import the python package")
-
-        # CONTINUE FROM HERE!
-        
-        if DEBUG: print(f">>> importer_file: {importer_file}")
-        if not importer_file: return None
-        file_to_import = importer_file.parent / f"{fullname}.py"
-        package_to_import = importer_file.parent / fullname / "__init__.py"
-        if file_to_import.exists() and package_to_import.exists():
-            warnings.warn(f"Found both a file and a python package named {fullname}, I will import the python package")
-        if package_to_import.exists():
-            if DEBUG: print(f">>> {fullname} is a package (dir)")
+        if packages_to_import:
+            package_to_import = packages_to_import[0]
             spec = importlib.util.spec_from_file_location(
                 fullname,
                 package_to_import,
                 submodule_search_locations=[str(importer_file.parent / fullname)] 
             )
-        elif file_to_import.exists():
-            if DEBUG: print(f">>> {fullname} is a file")
+        elif files_to_import:
+            file_to_import = files_to_import[0]
             spec = importlib.util.spec_from_file_location(
                 fullname,
                 file_to_import
             )
         else: return None
-        if DEBUG: print(f">>> spec.loader: {spec.loader}")
+        # if DEBUG: print(f">>> spec.loader: {spec.loader}")
         if spec.loader:
-            if DEBUG: print(f">>> Wrapping loader for {fullname} with CallableLoader")
+            # if DEBUG: print(f">>> Wrapping loader for {fullname} with CallableLoader")
             spec.loader = CallableLoader(spec.loader)
         return spec
-
-
 
 
 
@@ -201,11 +195,12 @@ def get_importer_filepath() -> Path:
 
 
 
-
 def install_hook():
     """Prepends our custom finder to the meta_path."""
     if DEBUG: print(">>> new_import_system's hook installed")
     if not any(isinstance(f, CallableFinder) for f in sys.meta_path):
         sys.meta_path.insert(0, CallableFinder())
+
+
 
 install_hook()

@@ -2,6 +2,9 @@ def test_get_importer_filepath():
     import new_import_system
     from pathlib import Path
     assert new_import_system.get_importer_filepath() == Path(__file__).absolute()
+    # print(f">>> Path(__file__).resolve(): {Path(__file__).resolve()}")
+    # print(f">>> Path(__file__).absolute(): {Path(__file__).absolute()}")
+    # assert Path(__file__).resolve() == Path(__file__).absolute()
 
 def test_1():
     import new_import_system
