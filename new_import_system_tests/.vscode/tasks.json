@@ -1,0 +1,55 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Pytest: Run tests in current file",
+      "type": "shell",
+      "command": "\"${command:python.interpreterPath}\"",
+      "args": [
+        "-m",
+        "pytest",
+        "-rFP",
+        "-q",
+        "-s",
+        "\"${relativeFile}\""
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    
+    {
+      "label": "Pytest: Run EXTERNAL tests",
+      "type": "shell",
+      "command": "\"${command:python.interpreterPath}\"",
+      "args": [
+        "-m",
+        "run_external_tests",
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+
+    {
+      "label": "Pull and Push to GitHub",
+      "type": "shell",
+      "command": "git pull && git add . && git commit -m 'VSCode Task: Auto-deploy' && git push",
+      "problemMatcher": [],
+    },
+  ]
+}

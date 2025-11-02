@@ -1,0 +1,1 @@
+def fun11(): return 'fun11'

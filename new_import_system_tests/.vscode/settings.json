@@ -1,0 +1,16 @@
+{
+    "editor.detectIndentation": true,
+    "editor.insertSpaces": true,
+    "workbench.startupEditor": "none", // Stops the "Welcome" page from opening every time you launch VS Code.
+
+    "git.autofetch": true,
+    "git.confirmSync": false, // disables the confirmation pop-up.
+
+    "python.terminal.activateEnvironment": true,
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**.egg-info": true,
+    },
+    "python.REPL.enableREPLSmartSend": false,
+}
