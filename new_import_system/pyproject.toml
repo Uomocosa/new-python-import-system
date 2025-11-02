@@ -17,4 +17,7 @@ dependencies = []
 packages = ["new_import_system"]
 
 [tool.pytest.ini_options]
-testpaths = ["../new_import_system_tests"]
+testpaths = [
+    "../new_import_system_tests/0_simple_package",
+    # "../new_import_system_tests/1_nested_submodules_I", # cannot add multiples here, instead use the script to run ALL tests
+]
