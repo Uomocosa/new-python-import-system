@@ -1,3 +1,8 @@
+"""
+THIS IS BROKEN AT THE MOMENT!
+USE 'new_import_systems_tests/run_external_tests.py'
+"""
+
 import subprocess
 import sys
 import os
