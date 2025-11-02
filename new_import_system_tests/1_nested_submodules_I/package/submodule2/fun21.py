@@ -4,3 +4,6 @@ from ..submodule1 import fun11
 def fun21(): 
     assert fun11() == 'fun11'
     return 'fun21'
+
+def test_():
+    assert fun21() == 'fun21'
