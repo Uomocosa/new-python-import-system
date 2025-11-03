@@ -1,14 +1,21 @@
 import sys
+import warnings
 from types import ModuleType
 
 DEBUG = False
 
 def make_module_callable(module, DEBUG=False, VERBOSE=False):
+    # DEBUG = True
     if DEBUG: print(f">F> make_module_callable")
     if VERBOSE: print(f">>> dir(module): {dir(module)}")
     fn_name = module.__name__.split('.')[-1]
     if DEBUG: print(f">>> fn_name: {fn_name}")
-    if not hasattr(module, fn_name): return module
+    print(module.__dict__.keys())
+    if not any([x in module.__dict__ for x in ['__call__', fn_name]]): return module
+    if all([x in module.__dict__ for x in ['__call__', fn_name]]): 
+        wrn_msg  = f"Found both '__call__' and {fn_name} inside package/module '{module.__name__}'"
+        wrn_msg += f"\n'__call__' will take precidence"
+        if fn_name != '__call__': warnings.warn(wrn_msg)
     if DEBUG: print("MODULE BECOMES CALLABLE")
     module = CallableModule(module)
     assert hasattr(module, '__call__')
@@ -38,22 +45,8 @@ class CallableModule(ModuleType):
 def call_this(module, *args, **kwargs):
     if DEBUG: print(f">F> call_this")
     fn_name = module.__name__.split('.')[-1]
-    if hasattr(module, fn_name):
-        foo = getattr(module, fn_name)
-        return foo(*args, **kwargs)
-    
-    err_msg  = f"self: '{module.__name__}' is not callable"
-    if module.__file__.endswith('__init__.py'):
-        err_msg += f"\n~!~ This is a PACKAGE (or folder), located at:"
-        err_msg += f"\n~!~ '{module.__file__}'"
-        err_msg += f"\n~!~ TO MAKE IT CALLABLE, please create a file '__call__.py' and"
-        err_msg += f"\n~!~ inside of it define a '__call__' function."
-        err_msg += f"\n~!~ Then, when you call this self that function will be invoked"
-    elif module.__file__.endswith('.py'):
-        err_msg += f"\n~!~ !!!NOT YET IMPLMENTED!!!"
-        err_msg += f"\n~!~ This is a MODULE (or file), located at:"
-        err_msg += f"\n~!~ '{module.__file__}'"
-        err_msg += f"\n~!~ TO MAKE IT CALLABLE: define a funtion '__call__'"
-        err_msg += f"\n~!~ OR: a funtion with the same name ('{fn_name}')"
-        err_msg += f"\n~!~ Then, when you call this module that function will be invoked"
-    raise TypeError(err_msg)
+    if fn_name in module.__dict__: foo = module.__dict__[fn_name]
+    if '__call__' in module.__dict__: foo = module.__dict__['__call__']
+    if DEBUG: print(f"foo: {foo}")
+    return foo(*args, **kwargs)
+

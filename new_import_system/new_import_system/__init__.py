@@ -16,12 +16,8 @@ IMPORTABLE_EXTENSIONS = [
     ".so",
 ]
 
-DEBUG = False
+DEBUG = True
 VERBOSE = False
-
-# THIS_FILE_PATH = P(__file__)
-# if DEBUG: print(f">>> THIS_FILE_PATH: {THIS_FILE_PATH}")
-
 
 class CallableFinder(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname, path, target=None):
@@ -30,47 +26,48 @@ class CallableFinder(importlib.abc.MetaPathFinder):
         if DEBUG: print(f">>> fullname: {fullname}")
         if DEBUG: print(f">>> path: {path}")
         if DEBUG: print(f">>> target: {target}")
+        if fullname == '__init__' and not path and not target: return None
+        name = fullname.split('.')[-1]
+        if DEBUG: print(f">>> name: {name}")
         if path is None: 
             # This is a top-level import, like 'import package'. Search sys.path.
+            if VERBOSE: print(f"sys.path: {sys.path}") 
             search_paths = [P(p) for p in sys.path if p and P(p).is_dir()]
         else:
             # This is a submodule import. like 'import package.subpackage' Search the parent's __path__.
             search_paths = [P(p) for p in path if p and P(p).is_dir()]
-        name = fullname.split('.')[-1]
+        if VERBOSE: print(f"search_paths: {search_paths}") 
         for search_path in search_paths:
-            package_init_file = search_path / name / "__init__.py"
-            modules_to_import = [search_path / f"{name}{stem}" for stem in IMPORTABLE_EXTENSIONS]
-            modules_to_import = [f for f in modules_to_import if f.exists()]
-            if DEBUG: print(f">>> package_init_file: {package_init_file}")
-            if DEBUG: print(f">>> modules_to_import: {modules_to_import}")
-            if package_init_file.exists() + len(modules_to_import) > 1:
+            possible_imports = []
+            possible_imports += [search_path / name / "__init__.py"]
+            possible_imports += [search_path / f"{name}{stem}" for stem in IMPORTABLE_EXTENSIONS]
+            possible_imports = [x for x in possible_imports if x.exists()]
+            if DEBUG: print(f">>> possible_imports: {possible_imports}")
+            if len(possible_imports) > 1:
                 wrn_msg = f"\n>>> Found multiple packages/modules that could be imported: "
-                if package_init_file: wrn_msg += f"\n>>> package:{package_init_file}"
-                if modules_to_import: wrn_msg += f"\n>>> modules:{modules_to_import}"
+                wrn_msg += f"\n>>> packages/modules:{possible_imports}"
                 wrn_msg += f"\n>>> I will import only the first one found."
                 warnings.warn(wrn_msg)
-            if package_init_file.exists():
-                if DEBUG: print(f">>> IMPORTING PACKAGE: '{package_init_file}'")
-                original_loader = importlib.machinery.SourceFileLoader(fullname, str(package_init_file))
-                spec = importlib.util.spec_from_file_location(
-                    fullname,
-                    package_init_file,
-                    submodule_search_locations=[str(package_init_file.parent)],
-                    loader=CallableLoader(original_loader),
-                )
-            elif modules_to_import:
-                module_to_import = modules_to_import[0]
-                if DEBUG: print(f">>> IMPORTING MODULE: '{module_to_import}'")
-                original_loader = importlib.machinery.SourceFileLoader(fullname, str(module_to_import))
-                spec = importlib.util.spec_from_file_location(
-                    fullname,
-                    module_to_import,
-                    submodule_search_locations=None,
-                    loader=CallableLoader(original_loader),
-                )
-            else: return
+            if not possible_imports: return None
+            to_import = possible_imports[0]
+            if to_import.name == '__init__.py':
+                if DEBUG: print(f">>> IMPORTING PACKAGE: '{to_import}'")
+                # fullname = to_import.parent.name
+                submodule_search_locations = [str(to_import.parent)]
+            else:
+                if DEBUG: print(f">>> IMPORTING MODULE: '{to_import}'")
+                submodule_search_locations = None
+            original_loader = importlib.machinery.SourceFileLoader(
+                fullname, 
+                str(to_import),
+            )
+            spec = importlib.util.spec_from_file_location(
+                fullname,
+                to_import,
+                submodule_search_locations=submodule_search_locations,
+                loader=CallableLoader(original_loader),
+            )
             return spec
-        if DEBUG: "module '{fullname}' was not found"
 
 
 
