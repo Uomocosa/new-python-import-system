@@ -1,3 +1,3 @@
 from pathlib import Path
 
-def P(path) -> Path: return Path(path).absolute()
+def P(path) -> Path: return Path(path).resolve()

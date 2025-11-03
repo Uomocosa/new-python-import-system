@@ -3,6 +3,7 @@ import warnings
 from types import ModuleType
 
 DEBUG = False
+VERBOSE = False
 
 def make_module_callable(module, DEBUG=False, VERBOSE=False):
     # DEBUG = True
@@ -10,7 +11,7 @@ def make_module_callable(module, DEBUG=False, VERBOSE=False):
     if VERBOSE: print(f">>> dir(module): {dir(module)}")
     fn_name = module.__name__.split('.')[-1]
     if DEBUG: print(f">>> fn_name: {fn_name}")
-    print(module.__dict__.keys())
+    if VERBOSE: print(f"module.__dict__.keys(): {module.__dict__.keys()}")
     if not any([x in module.__dict__ for x in ['__call__', fn_name]]): return module
     if all([x in module.__dict__ for x in ['__call__', fn_name]]): 
         wrn_msg  = f"Found both '__call__' and {fn_name} inside package/module '{module.__name__}'"
@@ -34,12 +35,14 @@ class CallableModule(ModuleType):
         self.__dict__.update(sys.modules[module.__name__].__dict__)
 
     def __call__(self, *args, **kwargs):
+        if DEBUG: print(">F> CallableModule.__call__")
         return call_this(self, *args, **kwargs)
     
     def __dir__(self):
+        if DEBUG: print(">F> CallableModule.__dir__")
         module_attrs = super().__dir__()
-        class_attrs = object.__dir__(self)
-        return sorted(list(set(module_attrs + class_attrs)))
+        if VERBOSE: print(f">>> module_attrs: {module_attrs}")
+        return sorted(list(set(module_attrs + ['__call__'])))
 
 
 def call_this(module, *args, **kwargs):

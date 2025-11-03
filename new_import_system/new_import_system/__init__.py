@@ -5,7 +5,7 @@ import importlib
 import importlib.util
 import importlib.abc
 from .P import P
-from .get_importer_filepath import get_importer_filepath
+from .get_importers_stack import get_importers_stack
 from .set_lazy_submodules import set_lazy_submodules
 from .make_module_callable import make_module_callable
 
@@ -16,7 +16,7 @@ IMPORTABLE_EXTENSIONS = [
     ".so",
 ]
 
-DEBUG = True
+DEBUG = False
 VERBOSE = False
 
 class CallableFinder(importlib.abc.MetaPathFinder):
@@ -87,13 +87,32 @@ class CallableLoader(importlib.abc.Loader):
 
 
 
-def install_hook():
+def install():
     """Prepends our custom finder to the meta_path."""
-    if DEBUG: print(">>> new_import_system's hook installed")
+    if DEBUG: print(">F> install()")
     if not any(isinstance(f, CallableFinder) for f in sys.meta_path):
         sys.meta_path.insert(0, CallableFinder())
-
-
-
-
-install_hook()
+    
+    importers = get_importers_stack()
+    top_package_init = importers[1]
+    assert top_package_init.name == "__init__.py", "Install new_importer_system inside the '__init__.py' of your top level package of your project"
+    if DEBUG: print(f"top_package_init: {top_package_init}")
+    top_package = top_package_init.parent
+    sys_key = top_package.name
+    if DEBUG: print(f"sys_key: {sys_key}")
+    if not sys_key in sys.modules: return
+    sys.modules[sys_key] = set_lazy_submodules(sys.modules[sys_key])
+    sys.modules[sys_key] = make_module_callable(sys.modules[sys_key])
+    if not '__main__' in sys.modules: return
+    main_script = sys.modules['__main__']
+    if DEBUG: print(f"main_script: {main_script}")
+    if not hasattr(main_script, '__file__'): return
+    if DEBUG: print(f"P(main_script.__file__): {P(main_script.__file__)}")
+    if DEBUG: print(f"P(top_package): {P(top_package)}")
+    if not P(main_script.__file__).is_relative_to(P(top_package.parent)): return
+    relative_path = P(main_script.__file__).relative_to(P(top_package.parent))
+    if DEBUG: print(f"relative_path: {relative_path}")
+    if DEBUG: print(f"relative_path: {relative_path}")
+    main_script.__package__ = '.'.join(relative_path.parent.parts)
+    if DEBUG: print(f"main_script.__package__: {main_script.__package__}")
+    

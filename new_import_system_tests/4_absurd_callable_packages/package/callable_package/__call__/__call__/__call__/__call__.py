@@ -1,4 +1,3 @@
-import new_import_system
 from package.submodule1 import fun11
 
 def __call__(DEBUG=False): 
@@ -8,3 +7,5 @@ def __call__(DEBUG=False):
 
 def test_():
     assert __call__(DEBUG=True) == 'callable_package/__call__'
+
+if __name__ == '__main__': test_()

@@ -1,6 +1,4 @@
-import new_import_system
 from ...submodule2 import fun21
-import package
 
 x111 = 'x111'
 

@@ -1,4 +1,3 @@
-import new_import_system
 from ..submodule1 import fun11
 
 def fun21(): 

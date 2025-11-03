@@ -12,6 +12,6 @@ requires-python = ">=3.8"
 license = "MIT AND (Apache-2.0 OR BSD-2-Clause)"
 
 dependencies = [
-  "new-import-system @ file:././new_import_system",
+  "new-import-system"
 ]
 

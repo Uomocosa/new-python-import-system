@@ -52,6 +52,8 @@ class LazyModule(ModuleType):
     def __dir__(self):
         if DEBUG: print(f">F> LazyModule's __dir__")
         self._load()
+        if DEBUG: print(f">>> type(self._module): {type(self._module)}")
+        if DEBUG: print(f">>> returning dir")
         return self._module.__dir__()
     
     def __repr__(self):
