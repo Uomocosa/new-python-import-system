@@ -1,9 +1,10 @@
 import new_import_system
 # import package
-from . import __init__
+# from . import __init__
 
-def test_sys_modules():
+def test_sys_modules(DEBUG=False):
     import sys; 
+    if DEBUG: print(f"sys.modules[-15:]: {list(sys.modules.keys())[-15:]}")
     assert 'package' in sys.modules
     # If you do import package 
     # You will get the sys.modules['package']
@@ -19,5 +20,5 @@ def test_():
     assert __call__(DEBUG=True) == 'fun21'
 
 if __name__ == '__main__': 
-    test_sys_modules()
-    test_()
+    test_sys_modules(DEBUG=True)
+    test_(DEBUG=True)
