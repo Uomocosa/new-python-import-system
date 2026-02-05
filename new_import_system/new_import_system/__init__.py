@@ -4,10 +4,12 @@ import warnings
 import importlib
 import importlib.util
 import importlib.abc
+from pathlib import Path
 from .P import P
-from .get_importers_stack import get_importers_stack
+from .timeit import timeit
 from .set_lazy_submodules import set_lazy_submodules
 from .make_module_callable import make_module_callable
+from .get_top_level_package import get_top_level_package
 
 IMPORTABLE_EXTENSIONS = [
     ".py",
@@ -18,15 +20,24 @@ IMPORTABLE_EXTENSIONS = [
 
 DEBUG = False
 VERBOSE = False
+TIMEIT = True
 
 class CallableFinder(importlib.abc.MetaPathFinder):
+    def __init__(self, top_level_package_dir: Path):
+        if DEBUG: print(f"CallableFinder.__init__(top_level_package_dir: {top_level_package_dir})")
+        self.top_level_package_dir = P(top_level_package_dir)
+        self.top_level_name = P(top_level_package_dir).name
+        
+    # @timeit # COMMENT THIS!
     def find_spec(self, fullname, path, target=None):
         if DEBUG: print(f">F> CallableFinder find_spec")
         # if DEBUG: print(f">>> self: {self}")
         if DEBUG: print(f">>> fullname: {fullname}")
+        # print(f">>> fullname: {fullname}")
         if DEBUG: print(f">>> path: {path}")
         if DEBUG: print(f">>> target: {target}")
         if fullname == '__init__' and not path and not target: return None
+        if not fullname.startswith(self.top_level_name): return None
         name = fullname.split('.')[-1]
         if DEBUG: print(f">>> name: {name}")
         if path is None: 
@@ -41,7 +52,11 @@ class CallableFinder(importlib.abc.MetaPathFinder):
             possible_imports = []
             possible_imports += [search_path / name / "__init__.py"]
             possible_imports += [search_path / f"{name}{stem}" for stem in IMPORTABLE_EXTENSIONS]
+            if DEBUG: print(f">>> possible_imports: {possible_imports}")
             possible_imports = [x for x in possible_imports if x.exists()]
+            if DEBUG: print(f">>> possible_imports: {possible_imports}")
+            if DEBUG: print(f">>> self.top_level_package_dir: {self.top_level_package_dir}")
+            possible_imports = [x for x in possible_imports if P(x).is_relative_to(P(self.top_level_package_dir))]
             if DEBUG: print(f">>> possible_imports: {possible_imports}")
             if len(possible_imports) > 1:
                 wrn_msg = f"\n>>> Found multiple packages/modules that could be imported: "
@@ -87,18 +102,20 @@ class CallableLoader(importlib.abc.Loader):
 
 
 
-def install():
+def install(top_level_package_init):
     """Prepends our custom finder to the meta_path."""
-    if DEBUG: print(">F> install()")
-    if not any(isinstance(f, CallableFinder) for f in sys.meta_path):
-        sys.meta_path.insert(0, CallableFinder())
-    
-    importers = get_importers_stack()
-    top_package_init = importers[1]
-    assert top_package_init.name == "__init__.py", "Install new_importer_system inside the '__init__.py' of your top level package of your project"
-    if DEBUG: print(f"top_package_init: {top_package_init}")
-    top_package = top_package_init.parent
-    sys_key = top_package.name
+    top_level_package_init = P(top_level_package_init)
+    assert top_level_package_init.exists()
+    assert top_level_package_init.name == "__init__.py"
+
+    if DEBUG: print(f">F> install(top_level_package_init: {top_level_package_init})")
+    top_level_package_dir = top_level_package_init.parent
+    callable_finder_isntances = [i for i in sys.meta_path if isinstance(i, CallableFinder)]
+    callable_finder_isntances = [i for i in callable_finder_isntances if i.top_level_package_dir == top_level_package_dir]
+    if not any(callable_finder_isntances):
+        sys.meta_path.insert(0, CallableFinder(top_level_package_dir))
+
+    sys_key = top_level_package_dir.name
     if DEBUG: print(f"sys_key: {sys_key}")
     if not sys_key in sys.modules: return
     sys.modules[sys_key] = set_lazy_submodules(sys.modules[sys_key])
@@ -108,11 +125,10 @@ def install():
     if DEBUG: print(f"main_script: {main_script}")
     if not hasattr(main_script, '__file__'): return
     if DEBUG: print(f"P(main_script.__file__): {P(main_script.__file__)}")
-    if DEBUG: print(f"P(top_package): {P(top_package)}")
-    if not P(main_script.__file__).is_relative_to(P(top_package.parent)): return
-    relative_path = P(main_script.__file__).relative_to(P(top_package.parent))
+    if DEBUG: print(f"P(top_level_package_dir): {P(top_level_package_dir)}")
+    if not P(main_script.__file__).is_relative_to(P(top_level_package_dir.parent)): return
+    relative_path = P(main_script.__file__).relative_to(P(top_level_package_dir.parent))
     if DEBUG: print(f"relative_path: {relative_path}")
     if DEBUG: print(f"relative_path: {relative_path}")
     main_script.__package__ = '.'.join(relative_path.parent.parts)
     if DEBUG: print(f"main_script.__package__: {main_script.__package__}")
-    

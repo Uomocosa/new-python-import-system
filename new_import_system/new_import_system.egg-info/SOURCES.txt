@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+new_import_system/LazyModule.py
+new_import_system/P.py
+new_import_system/__init__.py
+new_import_system/get_importers_stack.py
+new_import_system/get_top_level_package.py
+new_import_system/make_module_callable.py
+new_import_system/set_lazy_submodules.py
+new_import_system/timeit.py
+new_import_system.egg-info/PKG-INFO
+new_import_system.egg-info/SOURCES.txt
+new_import_system.egg-info/dependency_links.txt
+new_import_system.egg-info/top_level.txt

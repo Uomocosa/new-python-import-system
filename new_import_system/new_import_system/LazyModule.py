@@ -10,7 +10,12 @@ class LazyModule(ModuleType):
     """
     A proxy class that delays the import of a module until its first use.
     """
-    def __init__(self, full_import_name: str, abs_Path: Path):
+    def __init__(self, full_import_name: str, abs_Path: Path, x=None):
+        if x is not None:
+            err_msg =  f"Passed 4 arguments to LazyModule.__init__()\n"
+            err_msg += f"Probably during inheritance\n"
+            err_msg += f"Not implemented yet, play around it\n"
+            raise NotImplementedError("")
         if DEBUG: print(f">F> __init__")
         name = full_import_name.split('.')[-1]
         super().__init__(name)
@@ -88,7 +93,3 @@ class LazyModule(ModuleType):
                 err_msg += f"\n~!~ OR: a funtion with the same name ('{self._module.__name__}')"
                 err_msg += f"\n~!~ Then, when you call this module that function will be invoked"
             raise TypeError(err_msg)
-        
-
-
-
