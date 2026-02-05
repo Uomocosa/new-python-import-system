@@ -13,8 +13,10 @@
 
 # Core Idea
 **I dislike the python import system**.
+
 _I want a package that I can import and it magically makes the import system smarter, and possibly to my liking_.
-After you import this package:
+
+**After you import this package, and "install it" using `new_import_system.install(__file__)` in the top-level-init file of your package**:
 - When you import a package, its subpackages, (if any) are lazy loaded automatically.
 - If in a package/module you have a file/function named `__call__` or it has the same name as the package/module, then when you call the package/module that function gets automatically called.
 - All `__init__.py` files in your project _should_ remain empty, I have not tested how they interact with this package.
