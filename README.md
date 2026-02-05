@@ -22,7 +22,9 @@ _I want a package that I can import and it magically makes the import system sma
 - All `__init__.py` files in your project _should_ remain empty, I have not tested how they interact with this package.
 
 # Usage
-_**#TODO** Test exact usage, from `uv add new_python_import_system` or similar `uv add https:\\link-to-this-repo`._
+Using [uv](https://docs.astral.sh/uv/getting-started/installation/): 
+- In the dependencies section of your `project.toml` file add `"new-import-system @ git+https://github.com/Uomocosa/new-python-import-system"`
+- Or use `uv add new-import-system @ git+https://github.com/Uomocosa/new-python-import-system`
 
 In the "**root**" `__init__.py` file of your package, (The top-level-init file) you can import this package and use it to enhance your import system.
 If we take as example the package `test/0_simple_package`, the top-level-init file is the `test/0_simple_package/pkg0/__init__.py`:
