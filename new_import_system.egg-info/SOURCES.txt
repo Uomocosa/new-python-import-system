@@ -1,8 +1,0 @@
-README.md
-pyproject.toml
-new_import_system/__init__.py
-new_import_system.egg-info/PKG-INFO
-new_import_system.egg-info/SOURCES.txt
-new_import_system.egg-info/dependency_links.txt
-new_import_system.egg-info/requires.txt
-new_import_system.egg-info/top_level.txt
