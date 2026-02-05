@@ -1,15 +1,3 @@
-"""
-If you install this package using 'pip install .'
-you can even run this file (like 'python fun21.py') and will work
-NOTICE. You dont need to do python -m ...
-ALSO.   Relative imports will still work!
-WHY?    This can useful if someone wants to test this function 
-        without doing pytest ..., they can just clik run on the
-        vscode gui. 
-HOWEVER.You need to import package every time, to do it
-        Or at least do 'if __name__ == '__main__': import package'
-        As a consolation, it is lazily loaded.
-"""
 import pkg4 
 from ..submodule1 import fun11
 

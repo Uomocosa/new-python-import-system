@@ -8,8 +8,13 @@ on:
 
 jobs:
   test:
-    name: Run Tests
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    strategy:
+      # If one version fails, it won't stop the others
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout code
@@ -18,16 +23,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          # This enables caching to make your builds even faster
           enable-cache: true
 
-      - name: Set up Python
-        run: uv python install 3.13
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        # This installs pytest and your local package in editable mode
         run: uv sync --all-extras --dev
 
       - name: Run Pytest
-        # We use your exact command here
-        run: uv run pytest --durations=10
+        run: uv run pytest

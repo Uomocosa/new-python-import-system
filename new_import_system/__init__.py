@@ -1,1 +1,1 @@
-from .new_import_system import install
+from .lib import install

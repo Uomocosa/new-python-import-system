@@ -15,11 +15,20 @@ After you import this package:
 - If in a package/module you have a file/function named `__call__` or it has the same name as the package/module, then when you call the package/module that function gets automatically called.
 - All `__init__.py` files in your project _should_ remain empty, I have not tested how they interact with this package.
 
+# Usage
+#TODO Test exact usage, from `uv add new_python_import_system` or similar `uv add https:\\link-to-this-repo`
+In the "**root**" `__init__.py` file of your package, (The top-level-init file) you can import this package and use it to enhance your import system.
+If we take as example the package `test/0_simple_package`, the top-level-init file is the `test/0_simple_package/pkg0/__init__.py`:
+```python
+import new_import_system
+new_import_system.install(__file__)
+```
+
 ### Tests
-There are many tests in the `new_import_system_tests` folder, they can be all run from `new_import_system_tests\run_external_tests`.
-I have made some useful `new_import_system_tests\.vscode\tasks.json`.
+There are many tests in the `test` folder, they can be all run from `uv run -p .venv pytest`.
 
 # Considerations
+#TODO I changed from using pip install -e . to using uv. The underneath considerations have to be rewritten.
 I need to consider many different cases
 - If this is called after some packages/modules have been initialized, what should I do? Should I reload them? Should I populate their attributes?
 - If this is called from a python -m ... command (so the sys.path and sys.modules are populized)
@@ -35,4 +44,4 @@ As of now I try to:
 - Get the top_level_package and re-import it.
 - Get the caller_file for when an import is called using the `inspect` library.
 - Throw a warning if it menages to import a package/module, but it results in a "_too-magical approach_".
-- After you import this, every time you try to import a modules, if its a top-level package or subpackage it gets reloaded (_**ONLY ONCE PER PACKAGE**_). I do not know if `importlib.reload()` is fine to use ;; 
+<!--- After you import this, every time you try to import a modules, if its a top-level package or subpackage it gets reloaded (_**ONLY ONCE PER PACKAGE**_). I do not know if `importlib.reload()` is fine to use ;;-->
