@@ -1,4 +1,10 @@
-![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/tests.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-8.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-9.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-10.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-11.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-12.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-13.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-14.yml/badge.svg)
 
 # Core Idea
 **I dislike the python import system**.
@@ -9,7 +15,8 @@ After you import this package:
 - All `__init__.py` files in your project _should_ remain empty, I have not tested how they interact with this package.
 
 # Usage
-#TODO Test exact usage, from `uv add new_python_import_system` or similar `uv add https:\\link-to-this-repo`
+_**#TODO** Test exact usage, from `uv add new_python_import_system` or similar `uv add https:\\link-to-this-repo`._
+
 In the "**root**" `__init__.py` file of your package, (The top-level-init file) you can import this package and use it to enhance your import system.
 If we take as example the package `test/0_simple_package`, the top-level-init file is the `test/0_simple_package/pkg0/__init__.py`:
 ```python
@@ -21,7 +28,8 @@ new_import_system.install(__file__)
 There are many tests in the `test` folder, they can be all run from `uv run -p .venv pytest`.
 
 # Considerations
-#TODO I changed from using pip install -e . to using uv. The underneath considerations have to be rewritten.
+_**#TODO** I changed from using pip install -e . to using uv. The underneath considerations have to be rewritten._
+
 I need to consider many different cases
 - If this is called after some packages/modules have been initialized, what should I do? Should I reload them? Should I populate their attributes?
 - If this is called from a python -m ... command (so the sys.path and sys.modules are populized)
