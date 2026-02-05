@@ -6,6 +6,20 @@
 3.13: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-13.yml/badge.svg)
 3.14: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-14.yml/badge.svg)
 
+
+## CI Status
+
+| Python | Status |
+|--------|--------|
+| 3.8 | ![3.8](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.8) |
+| 3.9 | ![3.9](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.9) |
+| 3.10 | ![3.10](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.10) |
+| 3.11 | ![3.11](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.11) |
+| 3.12 | ![3.12](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.12) |
+| 3.13 | ![3.13](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.13) |
+| 3.14 | ![3.14](https://github.com/USER/REPO/actions/workflows/ci.yml/badge.svg?job=Python%203.14) |
+
+
 # Core Idea
 **I dislike the python import system**.
 _I want a package that I can import and it magically makes the import system smarter, and possibly to my liking_.
