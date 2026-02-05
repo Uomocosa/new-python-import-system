@@ -1,12 +1,3 @@
-3.8: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-8.yml/badge.svg)
-3.9: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-9.yml/badge.svg)
-3.10: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-10.yml/badge.svg)
-3.11: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-11.yml/badge.svg)
-3.12: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-12.yml/badge.svg)
-3.13: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-13.yml/badge.svg)
-3.14: ![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/test-3-14.yml/badge.svg)
-
-
 ## CI Status
 
 | Python | Status |
