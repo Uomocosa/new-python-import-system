@@ -1,4 +1,4 @@
-![CI Status](https://github.com/YOUR_GITHUB_USERNAME/new_import_system/actions/workflows/tests.yml/badge.svg)
+![CI Status](https://github.com/Uomocosa/new-python-import-system/actions/workflows/tests.yml/badge.svg)
 
 # Core Idea
 **I dislike the python import system**.
