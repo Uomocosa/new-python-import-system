@@ -20,7 +20,7 @@ IMPORTABLE_EXTENSIONS = [
 
 DEBUG = False
 VERBOSE = False
-TIMEIT = True
+TIMEIT = False
 
 class CallableFinder(importlib.abc.MetaPathFinder):
     def __init__(self, top_level_package_dir: Path):
