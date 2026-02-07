@@ -106,7 +106,7 @@ def install(top_level_package_init):
     """Prepends our custom finder to the meta_path."""
     top_level_package_init = P(top_level_package_init)
     assert top_level_package_init.exists()
-    assert top_level_package_init.name == "__init__.py"
+    assert top_level_package_init.name == "__init__.py", "install function must be called inside the top-level __init__.py file of your project"
 
     if DEBUG: print(f">F> install(top_level_package_init: {top_level_package_init})")
     top_level_package_dir = top_level_package_init.parent

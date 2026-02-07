@@ -14,7 +14,9 @@ requires-python = ">=3.8"
 dependencies = ["pytest"]
 
 [tool.setuptools]
-packages = ["new_import_system"]
+packages = { find = { where = ["."], include = [
+    "new_import_system*",
+] } }
 
 [tool.pytest.ini_options]
 python_files = "*.py"
