@@ -9,7 +9,6 @@ from .P import P
 from .timeit import timeit
 from .set_lazy_submodules import set_lazy_submodules
 from .make_module_callable import make_module_callable
-from .get_top_level_package import get_top_level_package
 
 IMPORTABLE_EXTENSIONS = [
     ".py",

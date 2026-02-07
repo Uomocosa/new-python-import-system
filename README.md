@@ -33,25 +33,17 @@ import new_import_system
 new_import_system.install(__file__)
 ```
 
-### Tests
+# Tests
 There are many tests in the `test` folder, they can be all run from `uv run -p .venv pytest`.
 
-# Considerations
-_**#TODO** I changed from using pip install -e . to using uv. The underneath considerations have to be rewritten._
+# As of now I:
+- Get the top_level_package by forcing the user to use the `.install(__file__)` function. This should be acceptable, as it is a one-time operation, and make the package less _magical_.
+- Based on the path of the top-level-init file, this package adds a import hook that allows you to import your sub-modules much more easily. Using this I can create much more files with a single function or class and test it inside the same file.
 
-I need to consider many different cases
-- If this is called after some packages/modules have been initialized, what should I do? Should I reload them? Should I populate their attributes?
-- If this is called from a python -m ... command (so the sys.path and sys.modules are populized)
-- If this is called from a python ... command (so the sys.path and sys.modules are kinda empty)
-- How do I define a top_level_package (should I search for the last `__init__.py` from parents folders, for `setup.py`? for `pyproject.toml`? What happens if I find multiples?)
-- Is the functions I use general enouugh? Are they "correct"?
-- I would like to add this import hook at the **END** of `sys.meta_path`, but at the moment it is not possible, and is instead added at the start.
-
-Any help is kindly apprechiated :)
-
-# Current answers for my considerations.
-As of now I try to:
-- Get the top_level_package and re-import it.
-- Get the caller_file for when an import is called using the `inspect` library.
-- Throw a warning if it menages to import a package/module, but it results in a "_too-magical approach_".
-<!--- After you import this, every time you try to import a modules, if its a top-level package or subpackage it gets reloaded (_**ONLY ONCE PER PACKAGE**_). I do not know if `importlib.reload()` is fine to use ;;-->
+# TODO
+_**Any help is kindly apprechiated :)**_
+_Add tests for each of the following cases_
+- Test with large imports like `import torch` see how time it takes to `.install()`
+- I dislike using lele.type(path.to.Class) or having to use path.to.Class.Class to define the type
+- Change the way DEBUG and VERBOSE work, I like to have a better way to control the verbosity of the package. Possibly by using loguru.
+- Improve the error messages when an import fails.
