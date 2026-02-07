@@ -18,7 +18,7 @@ IMPORTABLE_EXTENSIONS = [
     ".so",
 ]
 
-DEBUG = True
+DEBUG = False
 VERBOSE = False
 TIMEIT = False
 
